@@ -433,7 +433,7 @@ async function testWebhook() {
   }
 
   // 3. Dead endpoint, server error, and garbage URL: save still succeeds.
-  const erroring = await listen((rq, rs) => { rs.statusCode = 500; rs.end('boom'); });
+  const erroring = await listen((_rq, rs) => { rs.statusCode = 500; rs.end('boom'); });
   const closed = await listen(() => {});
   const deadPort = closed.address().port;
   await new Promise((r) => closed.close(r)); // nothing listens there now
