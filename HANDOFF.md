@@ -8,10 +8,10 @@ Built with Node.js, Express and PostgreSQL. There's no build step, no paid servi
 | What | Value |
 |---|---|
 | Hosting | `<Vercel or Render>` + Neon Postgres (all free tiers) |
-| App URL | `https://<your-app-url>` |
-| Lead form | `https://<your-app-url>/` |
-| Dashboard | `https://<your-app-url>/dashboard` |
-| Owner login | user `<OWNER_USER>`, password `<OWNER_PASS>` |
+| App URL | `https://lead-inbox-pied.vercel.app` |
+| Lead form | `https://lead-inbox-pied.vercel.app/` |
+| Dashboard | `https://lead-inbox-pied.vercel.app/dashboard` |
+| Owner login | user `admin`, password `admin` |
 | API token | `<API_TOKEN>` (send as `Authorization: Bearer <API_TOKEN>`) |
 
 If the repo is public, don't commit the real password or token here. Send them privately.
