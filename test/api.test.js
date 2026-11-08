@@ -272,6 +272,7 @@ async function testListAndFilters() {
 
   const all = await req('GET', '/api/leads', { token: auth });
   check('returns 200 + {leads: [...]}', all.status === 200 && Array.isArray(all.json && all.json.leads), all.status);
+  if (!Array.isArray(all.json && all.json.leads)) return; // nothing to inspect; the failure is recorded above
   const leads = all.json.leads;
   check('returns at least 3 leads', leads.length >= 3, leads.length);
   check('every item has exactly the lead fields', leads.every((l) => JSON.stringify(Object.keys(l).sort()) === JSON.stringify([...LEAD_KEYS].sort())));
@@ -460,6 +461,23 @@ async function testWebhook() {
 
 (async () => {
   console.log(`Testing ${BASE}`);
+
+  // Fail fast with a clear message instead of dozens of confusing 401s.
+  try {
+    const probe = await req('GET', '/api/leads?status=__probe__', { token: auth });
+    if (probe.status === 401) {
+      console.error(
+        '\nThe server rejected API_TOKEN (401).\n' +
+        'The token this test is using does not match the one the server started with.\n' +
+        'The server reads .env only at startup: if you changed API_TOKEN, restart the server (Ctrl+C, then npm run dev).'
+      );
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error(`\nCould not reach ${BASE}: ${err.cause?.code || err.message}\nIs the server running? Start it with: npm run dev`);
+    process.exit(1);
+  }
+
   try {
     await testHealth();
     await testCreate();

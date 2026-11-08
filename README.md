@@ -251,5 +251,7 @@ render.yaml       Render blueprint
 | `node: bad option: --env-file` | Your Node is older than 20.6. Upgrade Node. |
 | Dashboard login says wrong password | Check `OWNER_USER` / `OWNER_PASS` in `.env` (or on Render) and restart the server. |
 | `401` from the API | Send `Authorization: Bearer <API_TOKEN>` with the exact token value. |
+| Tests fail with lots of `401`s / "server rejected API_TOKEN" | The server reads `.env` only at startup. After changing `API_TOKEN`, restart it (Ctrl+C, then `npm run dev`). |
+| `SECURITY WARNING: The SSL modes 'prefer', 'require'...` | Harmless. To silence it, change `sslmode=require` to `sslmode=verify-full` in `DATABASE_URL`. |
 | `EADDRINUSE :3000` | Something else is using port 3000. Change `PORT` in `.env`. |
 | `[webhook] ... fetch failed` in logs | The webhook endpoint is down. Leads are still saved. |
