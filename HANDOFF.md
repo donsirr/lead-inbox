@@ -7,15 +7,18 @@ Built with Node.js, Express and PostgreSQL. There's no build step, no paid servi
 
 | What | Value |
 |---|---|
-| App URL | `https://<your-service>.onrender.com` |
-| Lead form | `https://<your-service>.onrender.com/` |
-| Dashboard | `https://<your-service>.onrender.com/dashboard` |
+| Hosting | `<Vercel or Render>` + Neon Postgres (all free tiers) |
+| App URL | `https://<your-app-url>` |
+| Lead form | `https://<your-app-url>/` |
+| Dashboard | `https://<your-app-url>/dashboard` |
 | Owner login | user `<OWNER_USER>`, password `<OWNER_PASS>` |
 | API token | `<API_TOKEN>` (send as `Authorization: Bearer <API_TOKEN>`) |
 
+If the repo is public, don't commit the real password or token here. Send them privately.
+
 ## Run locally
 
-Requires Node 20.6+ and a Postgres database. A free Neon database works fine for local dev too.
+Requires Node 20.6+ and a Postgres database. A free Neon database works fine.
 
 ```bash
 npm install
@@ -24,31 +27,50 @@ npm run dev                 # http://localhost:3000
 npm run test:local          # runs the API tests against the local server (in a second terminal)
 ```
 
-The app creates the `leads` table on startup if it doesn't exist.
+The app creates the `leads` table if it doesn't exist. Use a separate Neon branch (for example `dev`) for local
+work, because each test run adds about 90 test leads.
 
 To test a deployed server (the webhook tests are skipped, because they need to start local copies of the server):
 
 ```bash
-BASE_URL=https://<your-service>.onrender.com API_TOKEN=<token> OWNER_USER=<user> OWNER_PASS=<pass> npm test
+BASE_URL=https://<your-app-url> API_TOKEN=<token> OWNER_USER=<user> OWNER_PASS=<pass> npm test
 ```
 
-## Deploy (Render + Neon, both free)
+## Deploy
 
-1. **Neon**: create a project at neon.tech and copy the connection string (it ends in `?sslmode=require`).
-2. **GitHub**: push this repo.
-3. **Render**: New > Blueprint > pick the repo. `render.yaml` sets up the service. Fill in
-   `DATABASE_URL`, `OWNER_USER` and `OWNER_PASS`. `API_TOKEN` is generated for you; copy it from the
-   service's Environment tab.
-   (Or New > Web Service by hand: build `npm ci`, start `npm start`, health check `/health`, and the
-   same env vars.)
-4. Open `/health` (it should return `{"status":"ok"}`), then submit the form and log in to `/dashboard`.
+Both options use a free **Neon** database. Create a project at neon.tech and copy the connection string, then
+push the repo to **GitHub**. You'll need these env vars on either host:
 
-Note: Render's free tier sleeps after about 15 minutes without traffic, so the first request after that takes
-30 to 60 seconds. Neon also suspends idle databases. The app retries the database connection on startup.
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Neon connection string (keep `?sslmode=require`) |
+| `API_TOKEN` | Long random string: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `WEBHOOK_URL` | `https://webhook.site/548bf323-8265-4b51-9a18-f375f062ee84` |
+| `OWNER_USER` / `OWNER_PASS` | Dashboard login |
 
-**Alternative: Vercel (free, no card).** The same repo also deploys to Vercel's Hobby plan as a serverless
-function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `WEBHOOK_URL`, `OWNER_USER`,
-`OWNER_PASS`) and deploy. See the README for the steps. On Vercel, `API_TOKEN` is not generated for you, so make your own.
+Don't set `PORT`. The host sets it.
+
+### Option A: Vercel (no card needed)
+
+1. Sign in at vercel.com with GitHub (the Hobby plan is free).
+2. **Add New → Project**, import the repo, and leave all build settings on their defaults.
+3. Add the env vars above. For `DATABASE_URL`, use Neon's **pooled** string (the host contains `-pooler`).
+4. Deploy, then open `/health`.
+
+How it runs: Vercel imports `index.js`, which exports the app as one serverless function. `vercel.json` serves
+`/` and `/dashboard` from `public/`. After an env var change, redeploy (**Deployments → ⋯ → Redeploy**).
+
+### Option B: Render
+
+**New → Web Service**, pick the repo, choose the Free instance, build `npm ci`, start `npm start`, health
+check `/health`, and add the env vars above. (**New → Blueprint** uses `render.yaml` and generates `API_TOKEN`
+for you, but it asked for a card in our case.) The free tier sleeps after about 15 minutes idle, so the first
+request after that takes 30 to 60 seconds.
+
+### After deploying
+
+Open `/health` (it should return `{"status":"ok"}`). Then submit the form, log in to `/dashboard`, and check
+webhook.site for the `lead.created` request.
 
 ## What works
 
@@ -61,10 +83,14 @@ function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `
 - `POST /api/login` checks OWNER_USER/OWNER_PASS (timing-safe) and returns the token.
 - Rule-based category and urgency on each new lead (`src/classifier.js`).
 - Webhook `lead.created` is sent after saving, without waiting on it, with a 5s timeout. Failures are only logged.
-- Dashboard: login, filters, status change, note editing, logout, cards on mobile and a grid on desktop, dark mode.
+- Minimal white design with an orange accent on both pages. The form has client-side validation and shows
+  server errors. The dashboard has a login, status counts (New / Contacted / Won / Lost), status and category
+  filters, status changes, note editing and a logout. It shows cards on mobile and a grid on desktop.
   All lead text is rendered with `textContent` (no `innerHTML`), so it's XSS safe.
+- Runs on Vercel (serverless) or Render/any Node host (long-running server) from the same code.
 - `GET /health`, trust proxy, graceful shutdown.
-- `test/api.test.js`: 181 checks, all passing locally.
+- `test/api.test.js`: 181 checks, all passing, both as a normal server and as Vercel loads it. It stops
+  early with a clear message if the token is wrong or the server isn't running.
 
 ## What doesn't (yet)
 
@@ -72,15 +98,18 @@ function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `
 - No pagination: the list returns the newest 500. The spec asked for at least 100.
 - A single owner account. The "session" is just the API token kept in sessionStorage (it's cleared
   when the tab closes). Changing the token means updating `API_TOKEN` and logging in again.
-- The UI was syntax-checked and the API it uses is fully tested, but I couldn't click through it in a real
-  browser during this session. Give it a quick manual look on your phone.
+- How it was tested: the pages were rendered in a headless browser at desktop and phone sizes with fake data.
+  Vercel mode was tested locally by loading the app the way Vercel does. Neither has been clicked through on
+  a live deploy, so do a quick pass on your phone after deploying.
+- The pages load the Inter font from Google Fonts. If that's blocked, they fall back to the system font.
 - Only tested against Neon-compatible Postgres. Supabase should work, but its SSL certificate setup may need
   a tweak to the connection settings.
 
 ## Assumptions and judgment calls
 
-- **Rules-only sorting, no AI**, as required. See "Why rules-only" below.
-- **Postgres for persistence.** Render's free disk is wiped on every deploy.
+- **Rules-only sorting, no AI**, as required. See "Why rules-only sorting" below.
+- **Postgres for persistence.** Free hosts don't keep files: Render wipes its disk on deploy, and Vercel
+  functions have no persistent disk.
 - **The spec's example lead doesn't match its own rules.** The example message "Can you come Tuesday?" is
   labelled `booking`, but no booking keyword appears in it ("come on" is not "come Tuesday"). By the
   rules it contains "can you" and "?", so it is classified as **question**. I followed the rules.
@@ -103,11 +132,14 @@ function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `
 - **PATCH** with neither status nor note returns 400. Other fields in the body are ignored.
   The id format is checked (404), then the body (400), then whether the lead exists (404).
 - **JSON with no Content-Type header** is accepted on the API. Body-parser errors return 400, never 500.
-- **Webhook** is skipped if `WEBHOOK_URL` is empty. A non-2xx response is logged as an error.
+- **Webhook** is skipped if `WEBHOOK_URL` is empty. A non-2xx response is logged as an error. On Vercel it
+  is registered with `waitUntil` so the function isn't frozen before the webhook finishes.
+- **Table creation**: at startup on a normal server, and on the first API request on Vercel (serverless has
+  no startup step).
+- **Design**: the visual style follows a minimal template the client shared as a reference. Only the look
+  was used, with no assets or text copied. "Lead Inbox." in the header is a placeholder business name.
 
-## Questions you asked
-
-**Why rules-only is better here (for now):**
+## Why rules-only sorting (not AI)
 
 - **Predictable and testable**: the same message always gets the same label, so the grader and your tests can rely on it.
   AI output can change from one call or model version to the next.
@@ -120,7 +152,7 @@ function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `
 
 ## What I'd do next
 
-1. Optional AI classifier with fallback to the rules (above).
+1. Optional AI classifier behind an `AI_API_KEY`, falling back to the rules on any error, timeout or invalid answer.
 2. Rate limiting and a honeypot field on the public form.
 3. Email or SMS alert to the owner for high-urgency leads (the webhook can already feed Zapier, Make or n8n).
 4. Pagination and search in the dashboard. Export to CSV.
