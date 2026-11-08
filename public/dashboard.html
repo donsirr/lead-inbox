@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Lead Inbox</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main id="login-view" class="wrap" hidden>
+    <h1>Lead inbox</h1>
+    <p class="sub">Owner sign in</p>
+    <div id="login-alert" class="alert error" role="alert"></div>
+    <form id="login-form" class="panel">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="actions"><button type="submit" id="login-btn">Sign in</button></div>
+    </form>
+  </main>
+
+  <main id="app-view" class="wrap wide" hidden>
+    <div class="topbar">
+      <h1>Lead inbox</h1>
+      <button type="button" class="secondary" id="logout">Log out</button>
+    </div>
+    <div id="app-alert" class="alert error" role="alert"></div>
+    <div class="filters">
+      <div>
+        <label for="filter-status">Status</label>
+        <select id="filter-status">
+          <option value="">All</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+      <div>
+        <label for="filter-category">Category</label>
+        <select id="filter-category">
+          <option value="">All</option>
+          <option value="booking">Booking</option>
+          <option value="question">Question</option>
+          <option value="complaint">Complaint</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <p class="count" id="count" aria-live="polite"></p>
+    <div class="leads" id="leads"></div>
+  </main>
+  <script src="/dashboard.js"></script>
+</body>
+</html>
