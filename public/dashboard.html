@@ -5,30 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Lead Inbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <main id="login-view" class="wrap" hidden>
-    <h1>Lead inbox</h1>
-    <p class="sub">Owner sign in</p>
-    <div id="login-alert" class="alert error" role="alert"></div>
-    <form id="login-form" class="panel">
-      <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username" required>
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required>
-      <div class="actions"><button type="submit" id="login-btn">Sign in</button></div>
-    </form>
+  <header class="container nav">
+    <a class="logo" href="/dashboard">Lead Inbox<span>.</span></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Lead form</a>
+      <button type="button" id="logout" hidden>Log out</button>
+    </nav>
+  </header>
+
+  <!-- Login -->
+  <main id="login-view" class="container hero center" hidden>
+    <section>
+      <p class="eyebrow">Owner area</p>
+      <h1 class="display">Sign in to<br>your inbox<span>.</span></h1>
+      <div class="dots" aria-hidden="true"></div>
+    </section>
+    <section class="hero-side">
+      <div id="login-alert" class="alert error" role="alert"></div>
+      <form id="login-form" class="form">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn" id="login-btn">Sign in</button>
+      </form>
+    </section>
   </main>
 
-  <main id="app-view" class="wrap wide" hidden>
-    <div class="topbar">
-      <h1>Lead inbox</h1>
-      <button type="button" class="secondary" id="logout">Log out</button>
-    </div>
-    <div id="app-alert" class="alert error" role="alert"></div>
-    <div class="filters">
+  <!-- Dashboard -->
+  <main id="app-view" class="container" hidden>
+    <section class="dash-head">
       <div>
+        <p class="eyebrow">Dashboard</p>
+        <h1 class="display">Leads<span>.</span></h1>
+      </div>
+      <ul class="stats" id="stats" aria-label="Leads by status">
+        <li><span class="stat-num" data-stat="new">0</span><span class="stat-label">New</span></li>
+        <li><span class="stat-num" data-stat="contacted">0</span><span class="stat-label">Contacted</span></li>
+        <li><span class="stat-num" data-stat="won">0</span><span class="stat-label">Won</span></li>
+        <li><span class="stat-num" data-stat="lost">0</span><span class="stat-label">Lost</span></li>
+      </ul>
+    </section>
+
+    <div id="app-alert" class="alert error" role="alert" style="margin-top: 24px"></div>
+
+    <div class="toolbar">
+      <div class="field">
         <label for="filter-status">Status</label>
         <select id="filter-status">
           <option value="">All</option>
@@ -38,7 +70,7 @@
           <option value="lost">Lost</option>
         </select>
       </div>
-      <div>
+      <div class="field">
         <label for="filter-category">Category</label>
         <select id="filter-category">
           <option value="">All</option>
@@ -48,8 +80,9 @@
           <option value="other">Other</option>
         </select>
       </div>
+      <p class="count" id="count" aria-live="polite"></p>
     </div>
-    <p class="count" id="count" aria-live="polite"></p>
+
     <div class="leads" id="leads"></div>
   </main>
   <script src="/dashboard.js"></script>

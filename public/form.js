@@ -4,6 +4,7 @@
   const form = document.getElementById('lead-form');
   const alertBox = document.getElementById('alert');
   const submitBtn = document.getElementById('submit');
+  const submitLabel = document.getElementById('submit-label');
   const FIELDS = ['name', 'email', 'phone', 'service', 'message'];
   const SERVICES = ['cleaning', 'repair', 'consultation', 'other'];
   const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
@@ -50,7 +51,8 @@
     if (Object.keys(errors).length) return;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending…';
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitLabel.textContent = 'Sending…';
     try {
       const res = await fetch('/api/leads', {
         method: 'POST',
@@ -68,7 +70,8 @@
       setAlert('error', 'Network error. Please check your connection and try again.');
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Send request';
+      submitBtn.removeAttribute('aria-busy');
+      submitLabel.textContent = 'Send request';
       alertBox.scrollIntoView({ block: 'nearest' });
     }
   });

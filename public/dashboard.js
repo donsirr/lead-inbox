@@ -52,6 +52,7 @@
   function showView(loggedIn) {
     $('login-view').hidden = loggedIn;
     $('app-view').hidden = !loggedIn;
+    $('logout').hidden = !loggedIn;
   }
 
   function logout(message) {
@@ -107,9 +108,22 @@
       const { leads } = await api('/api/leads' + (params.size ? '?' + params : ''));
       if (seq !== loadSeq) return; // a newer filter change already won
       renderLeads(leads);
+      loadStats(params.size ? null : leads);
     } catch (err) {
       if (err.message !== 'unauthorized') $('app-alert').textContent = err.message;
     }
+  }
+
+  // Status counts always cover all leads, whatever the filters show.
+  // Reuses the list when it is already unfiltered; otherwise fetches it.
+  async function loadStats(allLeads) {
+    try {
+      const leads = allLeads || (await api('/api/leads')).leads;
+      for (const s of STATUSES) {
+        document.querySelector('[data-stat="' + s + '"]').textContent =
+          leads.filter((l) => l.status === s).length;
+      }
+    } catch { /* counts are a nice-to-have; the list itself reports errors */ }
   }
 
   function renderLeads(leads) {
@@ -141,7 +155,7 @@
     );
     statusSelect.value = lead.status;
     const note = el('textarea', { id: id + '-note', value: lead.note, maxLength: 5000, placeholder: 'Add a note…' });
-    const saveBtn = el('button', { type: 'button', className: 'secondary' }, 'Save note');
+    const saveBtn = el('button', { type: 'button', className: 'link-btn' }, 'Save note');
     const saveState = el('span', { className: 'save-state', role: 'status' });
 
     async function patch(changes, label) {
@@ -154,6 +168,7 @@
         // Drop the card if it no longer matches the active status filter.
         const f = $('filter-status').value;
         if (f && f !== lead.status) loadLeads();
+        else loadStats();
       } catch (err) {
         saveState.textContent = err.message === 'unauthorized' ? '' : 'Error: ' + err.message;
         statusSelect.value = lead.status;
