@@ -83,7 +83,7 @@ webhook.site for the `lead.created` request.
 - `POST /api/login` checks OWNER_USER/OWNER_PASS (timing-safe) and returns the token.
 - Rule-based category and urgency on each new lead (`src/classifier.js`).
 - Webhook `lead.created` is sent after saving, without waiting on it, with a 5s timeout. Failures are only logged.
-- Minimal white design with an orange accent on both pages. The form has client-side validation and shows
+- Minimal white design with a blue accent on both pages. The form has client-side validation and shows
   server errors. The dashboard has a login, status counts (New / Contacted / Won / Lost), status and category
   filters, status changes, note editing and a logout. It shows cards on mobile and a grid on desktop.
   All lead text is rendered with `textContent` (no `innerHTML`), so it's XSS safe.
