@@ -10,7 +10,7 @@ process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', 
 async function initWithRetry(attempts = 5) {
   for (let i = 1; ; i++) {
     try {
-      return await db.init();
+      return await db.ready();
     } catch (err) {
       if (i >= attempts) throw err;
       console.error(`[db] init failed (attempt ${i}/${attempts}): ${err.message}; retrying`);

@@ -10,6 +10,17 @@ const { classify, CATEGORIES } = require('./classifier');
 const { validateNewLead, validatePatch, STATUSES } = require('./validate');
 const { notifyLeadCreated } = require('./webhook');
 
+// On Vercel the function can be frozen once the response is sent; waitUntil
+// keeps it alive until the webhook finishes. Elsewhere the promise just runs.
+function runInBackground(promise) {
+  if (!process.env.VERCEL) return;
+  try {
+    require('@vercel/functions').waitUntil(promise);
+  } catch (err) {
+    console.error('[webhook] waitUntil failed:', err.message);
+  }
+}
+
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MAX_ID = 2147483647; // Postgres SERIAL (int4) upper bound
 
@@ -65,6 +76,12 @@ function createApp() {
   // Parse any content type as JSON so clients that forget the header still work.
   app.use('/api', express.json({ type: () => true, limit: '100kb' }));
 
+  // Make sure the table exists (a no-op after the first call).
+  app.use('/api', async (req, res, next) => {
+    await db.ready();
+    next();
+  });
+
   app.post('/api/login', (req, res) => {
     const { username, password } = req.body || {};
     const user = process.env.OWNER_USER;
@@ -83,7 +100,7 @@ function createApp() {
 
     const saved = await db.createLead({ ...lead, ...classify(lead.message) });
     res.status(201).json(saved);
-    notifyLeadCreated(saved); // not awaited: the response never waits on the webhook
+    runInBackground(notifyLeadCreated(saved)); // not awaited: the response never waits on the webhook
   });
 
   app.get('/api/leads', async (req, res) => {

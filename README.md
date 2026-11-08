@@ -109,10 +109,25 @@ health check path `/health`, and the env vars above.
 
 Render's free tier sleeps after about 15 minutes idle, so the first request after that takes 30–60 seconds.
 
+## Deploy to Vercel (free, no card)
+
+The repo also runs on Vercel's free Hobby plan as a serverless function: [`index.js`](index.js) exports the
+app, [`vercel.json`](vercel.json) maps `/` and `/dashboard` to the pages, and the table is created on the
+first request.
+
+1. Sign in at [vercel.com](https://vercel.com) with GitHub. The Hobby plan needs no card.
+2. Choose **Add New → Project** and import the repo. Leave the framework preset, build command and output
+   settings on their defaults.
+3. Under **Environment Variables**, add `DATABASE_URL`, `API_TOKEN`, `WEBHOOK_URL`, `OWNER_USER` and
+   `OWNER_PASS`. Don't add `PORT`. For Neon, use the **pooled** connection string (the host contains `-pooler`).
+4. Click **Deploy**, then open `https://<project>.vercel.app/health`.
+
+If you change an env var later, redeploy so the change takes effect (**Deployments → ⋯ → Redeploy**).
+
 ### Testing a deployed server
 
 ```bash
-BASE_URL=https://<your-service>.onrender.com \
+BASE_URL=https://<your-app-url> \
 API_TOKEN=<token> OWNER_USER=<user> OWNER_PASS=<pass> \
 npm test
 ```

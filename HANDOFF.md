@@ -46,6 +46,10 @@ BASE_URL=https://<your-service>.onrender.com API_TOKEN=<token> OWNER_USER=<user>
 Note: Render's free tier sleeps after about 15 minutes without traffic, so the first request after that takes
 30 to 60 seconds. Neon also suspends idle databases. The app retries the database connection on startup.
 
+**Alternative: Vercel (free, no card).** The same repo also deploys to Vercel's Hobby plan as a serverless
+function. Import the repo, add the five env vars (`DATABASE_URL`, `API_TOKEN`, `WEBHOOK_URL`, `OWNER_USER`,
+`OWNER_PASS`) and deploy. See the README for the steps. On Vercel, `API_TOKEN` is not generated for you, so make your own.
+
 ## What works
 
 - `POST /api/leads` (public, CORS enabled): validation with clear 400 errors, never a 500 on bad input

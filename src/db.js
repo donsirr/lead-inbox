@@ -34,6 +34,20 @@ async function init() {
   );
 }
 
+// Runs init() once per process. On a long-running server this happens at
+// startup; on serverless (Vercel) it happens on the first request. A failed
+// attempt is forgotten so the next call retries.
+let readyPromise = null;
+function ready() {
+  if (!readyPromise) {
+    readyPromise = init().catch((err) => {
+      readyPromise = null;
+      throw err;
+    });
+  }
+  return readyPromise;
+}
+
 // "2026-11-07T09:30:00Z": UTC, Z suffix, whole seconds (matches the spec example).
 const toIso = (d) => new Date(d).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
@@ -104,4 +118,4 @@ async function updateLead(id, changes) {
   return rows[0] ? toLead(rows[0]) : null;
 }
 
-module.exports = { pool, init, createLead, listLeads, getLead, updateLead };
+module.exports = { pool, init, ready, createLead, listLeads, getLead, updateLead };
