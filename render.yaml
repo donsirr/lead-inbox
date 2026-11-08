@@ -1,0 +1,21 @@
+# Render Blueprint: Dashboard > New > Blueprint > pick this repo.
+# Render sets PORT itself. Values marked sync: false are typed in when you create the Blueprint.
+services:
+  - type: web
+    name: lead-inbox
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Neon connection string, with ?sslmode=require
+      - key: API_TOKEN
+        generateValue: true # Render generates a random value; copy it from the Environment tab
+      - key: WEBHOOK_URL
+        value: https://webhook.site/548bf323-8265-4b51-9a18-f375f062ee84
+      - key: OWNER_USER
+        sync: false
+      - key: OWNER_PASS
+        sync: false
