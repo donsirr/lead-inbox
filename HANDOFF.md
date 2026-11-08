@@ -103,19 +103,6 @@ Note: Render's free tier sleeps after about 15 minutes without traffic, so the f
 
 ## Questions you asked
 
-**Can I use an AI free tier?** For this build, no: the spec says "no external AI APIs", and the grader
-checks the rule-based results. For a later version, yes.
-
-**Is it possible to add free-tier AI?** Yes. Several providers have free tiers with an API key, such as
-Google Gemini, Groq, Cloudflare Workers AI and Hugging Face. The code is ready for it: everything goes
-through `classify(message)` in `src/classifier.js`. A safe way to add it:
-
-1. Add `AI_API_KEY` (optional). If it's not set, keep using the rules.
-2. In `classifyWithAI(message)`, ask the model for JSON `{category, urgency}` with a short timeout (2 to 3s).
-3. Accept the answer only if both values are in the allowed lists. Otherwise, or on any error, rate
-   limit or timeout, fall back to `classify()`.
-4. Optionally save which method was used (`rules` or `ai`) so you can compare them.
-
 **Why rules-only is better here (for now):**
 
 - **Predictable and testable**: the same message always gets the same label, so the grader and your tests can rely on it.
