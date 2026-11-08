@@ -95,20 +95,6 @@ ordering, classifier and webhook failure handling. It ends with `N passed, 0 fai
 
 ---
 
-## Deploy to Render (free)
-
-1. Create a free **Neon** database and copy its connection string.
-2. Push this repo to **GitHub**.
-3. In **Render**, choose **New → Blueprint** and select the repo. [`render.yaml`](render.yaml) configures the service.
-4. Fill in `DATABASE_URL`, `OWNER_USER` and `OWNER_PASS`. `API_TOKEN` is generated for you; copy it
-   from the service's **Environment** tab. `WEBHOOK_URL` is already set.
-5. Wait for the deploy, then open `https://<your-service>.onrender.com/health`.
-
-Prefer to set it up by hand? Choose **New → Web Service** with build command `npm ci`, start command `npm start`,
-health check path `/health`, and the env vars above.
-
-Render's free tier sleeps after about 15 minutes idle, so the first request after that takes 30–60 seconds.
-
 ## Deploy to Vercel (free, no card)
 
 The repo also runs on Vercel's free Hobby plan as a serverless function: [`index.js`](index.js) exports the
